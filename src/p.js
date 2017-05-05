@@ -1,72 +1,1 @@
-var P = (function(prototype, ownProperty, undefined) {
-  return function P(_superclass /* = Object */, definition) {
-    // handle the case where no superclass is given
-    if (definition === undefined) {
-      definition = _superclass;
-      _superclass = Object;
-    }
-
-    // C is the class to be returned.
-    //
-    // When called, creates and initializes an instance of C, unless
-    // `this` is already an instance of C, then just initializes `this`;
-    // either way, returns the instance of C that was initialized.
-    //
-    //  TODO: the Chrome inspector shows all created objects as `C`
-    //        rather than `Object`.  Setting the .name property seems to
-    //        have no effect.  Is there a way to override this behavior?
-    function C() {
-      var self = this instanceof C ? this : new Bare;
-      self.init.apply(self, arguments);
-      return self;
-    }
-
-    // C.Bare is a class with a noop constructor.  Its prototype will be
-    // the same as C, so that instances of C.Bare are instances of C.
-    // `new MyClass.Bare` then creates new instances of C without
-    // calling .init().
-    function Bare() {}
-    C.Bare = Bare;
-
-    // Extend the prototype chain: first use Bare to create an
-    // uninitialized instance of the superclass, then set up Bare
-    // to create instances of this class.
-    var _super = Bare[prototype] = _superclass[prototype];
-    var proto = Bare[prototype] = C[prototype] = C.p = new Bare;
-
-    // pre-declaring the iteration variable for the loop below to save
-    // a `var` keyword after minification
-    var key;
-
-    // set the constructor property on the prototype, for convenience
-    proto.constructor = C;
-
-    C.extend = function(def) { return P(C, def); }
-
-    return (C.open = function(def) {
-      if (typeof def === 'function') {
-        // call the defining function with all the arguments you need
-        // extensions captures the return value.
-        def = def.call(C, proto, _super, C, _superclass);
-      }
-
-      // ...and extend it
-      if (typeof def === 'object') {
-        for (key in def) {
-          if (ownProperty.call(def, key)) {
-            proto[key] = def[key];
-          }
-        }
-      }
-
-      // if no init, assume we're inheriting from a non-Pjs class, so
-      // default to using the superclass constructor.
-      if (!('init' in proto)) proto.init = _superclass;
-
-      return C;
-    })(definition);
-  }
-
-  // as a minifier optimization, we've closured in a few helper functions
-  // and the string 'prototype' (C[p] is much shorter than C.prototype)
-})('prototype', ({}).hasOwnProperty);
+﻿var P = (function () {    //from https://github.com/jneen/pjs    var c = 0,              //计数器        g = {},             //全局缓存        n = 'pjs',          //工具名称        i = 'init',         //初始化函数名        m = '_mem_',        //类成员设置方法名        o = 'object',       //类型字符串        f = 'function',     //类型字符串        r = function (Class, Base, Name) {            //不存时            !!Base || (Base = Object), c++, !!Name || (Name = n + c)            var k, t,                //空的函数                zero = function () { },                //工厂构造                ctor = function () {                    //任何时间执行构造，都返回对应类的实例                    var me = this instanceof ctor ? this : new zero                    //如果基类不等行初始化函数 也不等于Object，则执行基类构造                    Base !== t && Base !== Object && Base.apply(me, arguments)                    //执行对应类的初始化函数                    t.apply(me, arguments)                    //返回对象                    return me                },                //引用has方法                isOP = Object.prototype.hasOwnProperty,                //基类原型 此步以zero桥接基类原型                _bPT = zero.prototype = Base.prototype,                //构造原型 通过实例化桥实现继承，同时覆盖zero原型，在非new执行构造时，实例化zero                _cPT = zero.prototype = ctor.prototype = new zero,                //用户定义绑定方法执行                bind = function (def, target) {                    //def是个方法 则执行并获取返回值                    //执行时传入四个参数 类[this],target,基类,基类原型                    if (typeof def === f) def = def.call(ctor, target, Base, _bPT)                    //def是个对象(传入或函数返回)，遍历此对象，添加到target                    if (typeof def === o) for (k in def) isOP.call(def, k) && (target[k] = def[k])                    //如果绑定的是类定义函数                    if (target === _cPT) {                        if (m in target) bind(target[m], ctor), delete target[m]   //如果存在静态成员方法或对象，则先执行绑定然后删除                        i in _cPT || (_cPT[i] = Base),                              //类原型中不包括初始化函数则绑定为基类                        t = _cPT[i], delete _cPT[i],                                //将初始化函数绑定到类私有对象后从原型删除                        _cPT.constructor = ctor                                     //将类原型中的构造指向工厂构造                    }                    return ctor                }            //类型            ctor.type = function () { return ctor }            //基类            ctor.base = function () { return Base }            //继承当前类，通过cls返回一个新类            ctor.extend = function (cls) { return cctor(cls, ctor) }            //覆盖tostring方法            ctor.toString = _cPT.toString = function () { return e.call(this, Name) }            //对传入的类进行绑定操作            return bind(Class, _cPT)        },        e = r.toString = function (v) { return '[' + (typeof this) + ' ' + (v ? v : n) + ']' }    return r})()
