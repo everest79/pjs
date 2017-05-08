@@ -7,14 +7,15 @@
         m = '_mem_',        //类成员设置方法名
         o = 'object',       //类型字符串
         f = 'function',     //类型字符串
-        r = function (Class, Base, Name) {
+        r = function (Class, Base, Name, Single) {
             //不存时
             !!Base || (Base = Object), c++, !!Name || (Name = n + c)
-            var k, t,
+            var k, t, x = c,
                 //空的函数
                 zero = function () { },
                 //工厂构造
                 ctor = function () {
+                    if (Single && x > 1) return void (0)
                     //任何时间执行构造，都返回对应类的实例
                     var me = this instanceof ctor ? this : new zero
                     //如果基类不等行初始化函数 也不等于Object，则执行基类构造
@@ -46,10 +47,8 @@
                     }
                     return ctor
                 }
-            //类型
-            ctor.type = function () { return ctor }
             //基类
-            ctor.base = function () { return Base }
+            ctor.base = function () { return Base.toString() }
             //继承当前类，通过cls返回一个新类
             ctor.extend = function (cls) { return cctor(cls, ctor) }
             //覆盖tostring方法
